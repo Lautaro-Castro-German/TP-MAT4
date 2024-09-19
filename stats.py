@@ -23,23 +23,30 @@ def calculate_stats(x, y):
     x = np.array(x)
     y = np.array(y)
 
-    # Cálculos
     n = x.size
     x_mean = np.mean(x)
     y_mean = np.mean(y)
-    Sxy = np.sum((x - x_mean) * (y - y_mean))
-    Sxx = np.sum((x - x_mean)**2)
+    sumxy = np.sum(x * y)
+    sumx = np.sum(x)
+    sumx2 = np.sum(x**2)
+    sumy = np.sum(y)
+
+    Sxy = sumxy - (sumx * sumy) / n
+    Sxx = sumx2 - sumx**2 / n
     Syy = np.sum((y - y_mean)**2)
+
     b1 = Sxy / Sxx
     b0 = y_mean - b1 * x_mean
 
-    SCE = np.sum((y - (b0 + b1*x))**2)
-    SCR = np.sum(((b0 + b1*x) - y_mean)**2)
+    regy = b0 + b1*x
+
+    SCE = np.sum((y - regy)**2)
+    SCR = np.sum((regy - y_mean)**2)
     STC = Syy
 
     R2 = 1 - (SCE / STC) # o también SCR / STC
 
-    r = np.sqrt(R2)
+    r = Sxy / np.sqrt(Sxx * Syy)
     sigma2 = SCE / (n - 2)
 
     T = b1 / np.sqrt(sigma2 / Sxx)
