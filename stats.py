@@ -4,21 +4,44 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import t as t_student
 
+
 def render_points(x, y, m=1, b=0):
     plt.figure(figsize=(8, 6))
 
-    plt.scatter(x, y, color='blue', marker='o')
+    plt.scatter(x, y, color="blue", marker="o")
 
     x_values = np.linspace(min(x), max(x), 100)
     y_values = m * x_values + b
-    plt.plot(x_values, y_values, color='red', label=f'y = {m}x + {b}', linewidth=2)
+    plt.plot(x_values, y_values, color="red", label=f"y = {m}x + {b}", linewidth=2)
 
-    plt.title('Gráfico de Dispersión con Línea Recta', fontsize=14)
-    plt.xlabel('Valores de X', fontsize=12)
-    plt.ylabel('Valores de Y', fontsize=12)
+    plt.title("Gráfico de Dispersión con Línea Recta", fontsize=14)
+    plt.xlabel("Valores de X", fontsize=12)
+    plt.ylabel("Valores de Y", fontsize=12)
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
+def calcule_t(n, v, alpha):
+    return t_student.ppf(1 - alpha, n - v)
+
+
+def calcule_ic(n, xstar, alpha, b0, b1, x_mean, Sxx, sigma2):
+    t = calcule_t(n, 2, alpha / 2)
+    y_hat = b0 + b1 * xstar
+    wide = t * np.sqrt(sigma2 * (1 / n + (xstar - x_mean) ** 2 / Sxx))
+    ic = [y_hat - wide, y_hat + wide]
+    print(f"y_hat = {y_hat}\n" f"wide = {wide}\n" f"t = {t}\n" f"sigma2 = {sigma2}\n")
+    return ic
+
+
+def calcule_ip(n, xstar, alpha, b0, b1, x_mean, Sxx, sigma2):
+    t = calcule_t(n, 2, alpha / 2)
+    y_hat = b0 + b1 * xstar
+    wide = t * np.sqrt(sigma2 * (1 + 1 / n + (xstar - x_mean) ** 2 / Sxx))
+    ip = [y_hat - wide, y_hat + wide]
+    return ip
+
 
 def calculate_stats(x, y):
     x = np.array(x)
@@ -34,21 +57,20 @@ def calculate_stats(x, y):
 
     Sxy = sumxy - (sumx * sumy) / n
     Sxx = sumx2 - sumx**2 / n
-    Syy = np.sum((y - y_mean)**2)
+    Syy = np.sum((y - y_mean) ** 2)
 
     b1 = Sxy / Sxx
     b0 = y_mean - b1 * x_mean
 
-    regy = b0 + b1*x
+    regy = b0 + b1 * x
 
-    SCE = np.sum((y - regy)**2)
-    SCR = np.sum((regy - y_mean)**2)
+    SCE = np.sum((y - regy) ** 2)
+    SCR = np.sum((regy - y_mean) ** 2)
     STC = Syy
 
-    R2 = 1 - (SCE / STC) # o también SCR / STC
+    R2 = 1 - (SCE / STC)  # o también SCR / STC
 
-    alpha = 0.05
-    t = t_student.ppf(1 - alpha/2, n-2)
+    t = calcule_t(n, 2, 0.05 / 2)
 
     r = Sxy / np.sqrt(Sxx * Syy)
     sigma2 = SCE / (n - 2)
@@ -56,22 +78,23 @@ def calculate_stats(x, y):
     T = b1 / np.sqrt(sigma2 / Sxx)
 
     return {
-        'n': n,
-        'x_mean': x_mean,
-        'y_mean': y_mean,
-        'Sxy': Sxy,
-        'Sxx': Sxx,
-        'Syy': Syy,
-        'b0': b0,
-        'b1': b1,
-        'SCE': SCE,
-        'SCR': SCR,
-        'R2': R2,
-        'r': r,
-        'sigma2': sigma2,
-        'T': T,
-        't': t,
+        "n": n,
+        "x_mean": x_mean,
+        "y_mean": y_mean,
+        "Sxy": Sxy,
+        "Sxx": Sxx,
+        "Syy": Syy,
+        "b0": b0,
+        "b1": b1,
+        "SCE": SCE,
+        "SCR": SCR,
+        "R2": R2,
+        "r": r,
+        "sigma2": sigma2,
+        "T": T,
+        "t": t,
     }
+
 
 def print_stats(stats):
     print(
@@ -93,7 +116,8 @@ def print_stats(stats):
         f"$t = {stats['t']}$\n\n"
     )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
 
     cols = [
         "age",
@@ -103,27 +127,55 @@ if __name__ == '__main__':
         "potential",
         "wage_eur",
         "skill_moves",
-        # "pace",
-        # "shooting",
-        # "passing",
-        # "dribbling",
-        # "defending",
-        # "physic",
     ]
 
     # Lectura de los datos del archivo CSV
     with open(sys.argv[1]) as csvfile:
         df = pd.read_csv(csvfile)
-        y = df['value_eur'].values
+        y = df["value_eur"].values
+        max_col = -1
+        x_max = None
         for col in cols:
             x = df[col].values
             stats = calculate_stats(x, y)
-            print(
-                f"Columna: {col}\n"
-                f"R^2 = {stats['R2']}\n"
-                f"r = {stats['r']}\n"
-            )
+            print(f"Columna: {col}\n" f"R^2 = {stats['R2']}\n" f"r = {stats['r']}\n")
+            if col == "height_cm":
+                max_col = stats["R2"]
+                x_max = x
 
-    if len(sys.argv) > 2:
-        eval_value = stats['b0'] + stats['b1'] * float(sys.argv[2])
-        print(f"Evaluation for {sys.argv[2]} = {eval_value}")
+    print(f"{x_max[0]}")
+
+    s = calculate_stats(x_max, y)
+
+    render_points(x_max, y, s["b1"], s["b0"])
+
+    print_stats(s)
+
+    ip = calcule_ip(
+        n=s["n"],
+        xstar=s["x_mean"],
+        alpha=0.05,
+        b0=s["b0"],
+        b1=s["b1"],
+        x_mean=s["x_mean"],
+        Sxx=s["Sxx"],
+        sigma2=s["sigma2"],
+    )
+
+    ic = calcule_ic(
+        n=s["n"],
+        xstar=s["x_mean"],
+        alpha=0.05,
+        b0=s["b0"],
+        b1=s["b1"],
+        x_mean=s["x_mean"],
+        Sxx=s["Sxx"],
+        sigma2=s["sigma2"],
+    )
+
+    L_ic = ic[1] - ic[0]
+    L_ip = ip[1] - ip[0]
+
+    print(f"Intervalo de confianza: {ic}\n" f"Intervalo de predicción: {ip}\n")
+
+    print(f"La proporción es: {L_ip / L_ic}\n")
