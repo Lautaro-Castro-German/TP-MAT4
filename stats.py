@@ -1,7 +1,8 @@
-import numpy as np
-import json
 import sys
+import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.stats import t as t_student
 
 def render_points(x, y, m=1, b=0):
     plt.figure(figsize=(8, 6))
@@ -46,51 +47,83 @@ def calculate_stats(x, y):
 
     R2 = 1 - (SCE / STC) # o también SCR / STC
 
+    alpha = 0.05
+    t = t_student.ppf(1 - alpha/2, n-2)
+
     r = Sxy / np.sqrt(Sxx * Syy)
     sigma2 = SCE / (n - 2)
 
     T = b1 / np.sqrt(sigma2 / Sxx)
 
-    return n, x_mean, y_mean, \
-        Sxy, Sxx, Syy, \
-        b0, b1, \
-        SCE, SCR, \
-        R2, r, \
-        sigma2, T
+    return {
+        'n': n,
+        'x_mean': x_mean,
+        'y_mean': y_mean,
+        'Sxy': Sxy,
+        'Sxx': Sxx,
+        'Syy': Syy,
+        'b0': b0,
+        'b1': b1,
+        'SCE': SCE,
+        'SCR': SCR,
+        'R2': R2,
+        'r': r,
+        'sigma2': sigma2,
+        'T': T,
+        't': t,
+    }
 
-if __name__ == '__main__':
-    with open(sys.argv[1]) as json_data:
-        dataset = json.load(json_data)
-
-    x = dataset['x']
-    y = dataset['y']
-
-    n, x_mean, y_mean, \
-    Sxy, Sxx, Syy, \
-    b0, b1, \
-    SCE, SCR, \
-    R2, r, \
-    sigma2, T = calculate_stats(x, y)
-
+def print_stats(stats):
     print(
-        f"$n = {n}$\n\n"
-        f"$\\bar{{x}} = {x_mean}$\n\n"
-        f"$\\bar{{y}} = {y_mean}$\n\n"
-        f"$S_{{xy}} = {Sxy}$\n\n"
-        f"$S_{{xx}} = {Sxx}$\n\n"
-        f"$S_{{yy}} = {Syy}$\n\n"
-        f"$\\hat{{\\beta_0}} = {b0}$\n\n"
-        f"$\\hat{{\\beta_1}} = {b1}$\n\n"
-        f"$\\hat{{y}} = {b1}x + {b0}$\n\n"
-        f"$\\sigma^2 = {sigma2}$\n\n"
-        f"$SCE = {SCE}$\n\n"
-        f"$SCR = {SCR}$\n\n"
-        f"$R^2 = {R2}$\n\n"
-        f"$r = {r}$\n\n"
-        f"T = \\frac{{{b1}}}{{\\sqrt{{{sigma2} / {Sxx}}}}} = {T}$\n\n"
+        f"$n = {stats['n']}$\n\n"
+        f"$\\bar{{x}} = {stats['x_mean']}$\n\n"
+        f"$\\bar{{y}} = {stats['y_mean']}$\n\n"
+        f"$S_{{xy}} = {stats['Sxy']}$\n\n"
+        f"$S_{{xx}} = {stats['Sxx']}$\n\n"
+        f"$S_{{yy}} = {stats['Syy']}$\n\n"
+        f"$\\hat{{\\beta_0}} = {stats['b0']}$\n\n"
+        f"$\\hat{{\\beta_1}} = {stats['b1']}$\n\n"
+        f"$\\hat{{y}} = {stats['b1']}x + {stats['b0']}$\n\n"
+        f"$\\sigma^2 = {stats['sigma2']}$\n\n"
+        f"$SCE = {stats['SCE']}$\n\n"
+        f"$SCR = {stats['SCR']}$\n\n"
+        f"$R^2 = {stats['R2']}$\n\n"
+        f"$r = {stats['r']}$\n\n"
+        f"T = \\frac{{{stats['b1']}}}{{\\sqrt{{{stats['sigma2']} / {stats['Sxx']}}}}} = {stats['T']}$\n\n"
+        f"$t = {stats['t']}$\n\n"
     )
 
-    if (len(sys.argv) > 2):
-        print(f"evaluation {sys.argv[2]}={b0 + b1 * float(sys.argv[2])}")
+if __name__ == '__main__':
 
-    render_points(x, y, b1, b0)
+    cols = [
+        "age",
+        "height_cm",
+        "weight_kg",
+        "overall",
+        "potential",
+        "wage_eur",
+        "skill_moves",
+        # "pace",
+        # "shooting",
+        # "passing",
+        # "dribbling",
+        # "defending",
+        # "physic",
+    ]
+
+    # Lectura de los datos del archivo CSV
+    with open(sys.argv[1]) as csvfile:
+        df = pd.read_csv(csvfile)
+        y = df['value_eur'].values
+        for col in cols:
+            x = df[col].values
+            stats = calculate_stats(x, y)
+            print(
+                f"Columna: {col}\n"
+                f"R^2 = {stats['R2']}\n"
+                f"r = {stats['r']}\n"
+            )
+
+    if len(sys.argv) > 2:
+        eval_value = stats['b0'] + stats['b1'] * float(sys.argv[2])
+        print(f"Evaluation for {sys.argv[2]} = {eval_value}")

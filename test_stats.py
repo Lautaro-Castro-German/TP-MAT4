@@ -8,13 +8,21 @@ class StatsTest(unittest.TestCase):
         self.y = [54.74, 59.01, 72.92, 50.85, 54.99, 60.56, 69.08, 77.03, 69.97, 90.7]
     
     def test_calculate_stats(self):
-        n, x_mean, y_mean, \
-        Sxy, Sxx, Syy, \
-        b0, b1, \
-        SCE, SCR, \
-        R2, r, \
-        sigma2, T = stats.calculate_stats(self.x, self.y)
+        s = stats.calculate_stats(self.x, self.y)
         
+        n = s['n']
+        x_mean = s['x_mean']
+        y_mean = s['y_mean']
+        Sxy = s['Sxy']
+        Sxx = s['Sxx']
+        Syy = s['Syy']
+        b0 = s['b0']
+        b1 = s['b1']
+        r = s['r']
+        R2 = s['R2']
+        sigma2 = s['sigma2']
+        t = s['t']
+
         self.assertEqual(n, 10)
         self.assertAlmostEqual(x_mean, 3.706, 2)
         self.assertAlmostEqual(y_mean, 65.985, 2)
@@ -26,3 +34,4 @@ class StatsTest(unittest.TestCase):
         self.assertAlmostEqual(r, 0.740697814, 2)
         self.assertAlmostEqual(R2, 0.548633252, 2)
         self.assertAlmostEqual(sigma2, 76.78122162, 2)
+        self.assertAlmostEqual(t, 2.30600, 2)
