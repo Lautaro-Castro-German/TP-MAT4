@@ -141,3 +141,5 @@ print(
 estimateFluctiations(stats)
 
 # df_cleaned_rows.to_csv("players_21_filtered2.csv", index=False)
+
+s = calculate_stats(df_filtered["overall"].values, y_values)

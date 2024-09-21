@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
+from sklearn.preprocessing import MinMaxScaler
 
 if __name__ == "__main__":
 
@@ -61,3 +62,59 @@ if __name__ == "__main__":
         f"R^2 ajustado = {rsquared_adj}\n"
         f"r = {corr}\n"
     )
+
+
+    print("-" * 50)
+    print("Descenso por gradiente")
+
+def initialize_params(n_features):
+    beta = np.random.randn(n_features) * 0.01
+    return beta
+
+def add_ones_column(X):
+    return np.concatenate([np.ones((X.shape[0], 1)), X], axis=1)
+
+def normalize_data_min_max(X):
+    scaler = MinMaxScaler()
+    return scaler.fit_transform(X)
+
+
+def stochastic_gradient_descent(X, y, alfa=0.001, iterations=100, normalize=True):
+    X = add_ones_column(X)
+    if(normalize):
+        X = normalize_data_min_max(X)
+
+    beta = initialize_params(X.shape[1])
+    n_samples = X.shape[0] # Número de muestras
+
+    for i in range(iterations):
+        for j in range(n_samples):
+            # Seleccionar una muestra individual
+            x_j = X[j]
+            y_j = y[j]
+
+            prediction = np.dot(x_j, beta)
+
+            # Calcular los gradientes
+            error = prediction - y_j
+            gradient = error * x_j
+
+            # Actualizar los pesos
+            beta -= alfa * gradient
+            
+
+
+        # Opcional: imprimir el costo para seguimiento
+        #cost = np.mean((np.dot(X, beta) - y) ** 2)
+        #print cost variables used
+        #print(f'Iteracion {i+1}, X: {x_j}, y: {y_j}, Prediccion: {prediction}, Error: {error}, Gradiente: {gradient}')
+        #print(f'Iteracion {i+1}, Costo: {cost}')
+    
+    return beta
+
+y = df["value_eur"].values
+X = df[cols].values
+
+beta = stochastic_gradient_descent(X, y, normalize=True)
+
+print(f"Coeficientes: {beta}")
