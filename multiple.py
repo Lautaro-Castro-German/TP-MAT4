@@ -67,9 +67,8 @@ if __name__ == "__main__":
         f"r = {corr}\n"
     )
 
-
-    print("-" * 50)
-    print("Descenso por gradiente")
+    # print("-" * 50)
+    # print("Descenso por gradiente")
 
     def initialize_params(n_features):
         beta = np.random.randn(n_features) * 0.01
@@ -78,12 +77,11 @@ if __name__ == "__main__":
     def add_ones_column(X):
         return np.concatenate([np.ones((X.shape[0], 1)), X], axis=1)
 
-
     def stochastic_gradient_descent(X, y, alfa=0.001, iterations=1000):
         X = add_ones_column(X)
 
         beta = initialize_params(X.shape[1])
-        n_samples = X.shape[0] # Número de muestras
+        n_samples = X.shape[0]  # Número de muestras
 
         for i in range(iterations):
             for j in range(n_samples):
@@ -99,17 +97,15 @@ if __name__ == "__main__":
 
                 # Actualizar los pesos
                 beta -= alfa * gradient
-                
-
 
             # Opcional: imprimir el costo para seguimiento
-            #cost = np.mean((np.dot(X, beta) - y) ** 2)
-            #print cost variables used
-            #print(f'Iteracion {i+1}, X: {x_j}, y: {y_j}, Prediccion: {prediction}, Error: {error}, Gradiente: {gradient}')
-            #print(f'Iteracion {i+1}, Costo: {cost}')
+            # cost = np.mean((np.dot(X, beta) - y) ** 2)
+            # print cost variables used
+            # print(f'Iteracion {i+1}, X: {x_j}, y: {y_j}, Prediccion: {prediction}, Error: {error}, Gradiente: {gradient}')
+            # print(f'Iteracion {i+1}, Costo: {cost}')
 
         return beta
 
-    beta = stochastic_gradient_descent(X, y)
+    # beta = stochastic_gradient_descent(X, y)
 
-    print(f"Coeficientes: {beta}")
+    # print(f"Coeficientes: {beta}")
