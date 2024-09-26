@@ -31,7 +31,6 @@ def calcule_ic(n, xstar, alpha, b0, b1, x_mean, Sxx, sigma2):
     y_hat = b0 + b1 * xstar
     wide = t * np.sqrt(sigma2 * (1 / n + (xstar - x_mean) ** 2 / Sxx))
     ic = [y_hat - wide, y_hat + wide]
-    print(f"y_hat = {y_hat}\n" f"wide = {wide}\n" f"t = {t}\n" f"sigma2 = {sigma2}\n")
     return ic
 
 
