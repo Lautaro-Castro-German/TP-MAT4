@@ -31,6 +31,14 @@ def load_data():
     return X, y
 
 
+def add_row(data: dict, iteration, prev, new, fnew, error):
+    data["iteration"].append(iteration)
+    data["prev"].append(prev)
+    data["new"].append(new)
+    data["fnew"].append(fnew)
+    data["error"].append(error)
+
+
 if __name__ == "__main__":
     inicio = time.process_time()  # inicio conteo de tiempo de ejecución
 
@@ -46,10 +54,11 @@ if __name__ == "__main__":
 
     X, Y = load_data()
     n = X.shape[0]
+    data = {"iteration": [], "prev": [], "new": [], "fnew": [], "error": []}
     # función y derivada
     f = ecm
     df = ecm_grad
-    tol = 1e-6
+    tol = 1e-6  # tolerancia antes 1e-16
     step = 0.01
     iteration = 1
 
@@ -68,6 +77,7 @@ if __name__ == "__main__":
         error = abs(f_new - f_prev)
 
         iteration += 1
+        add_row(data, iteration, f_prev, f_new, f_new, error)
 
     fin = time.process_time()
 
@@ -77,3 +87,26 @@ if __name__ == "__main__":
     print(
         f"Tiempo de ejecución: {fin - inicio:.4f} segundos con {iteration} iteraciones"
     )
+
+    # Definir cuántas iteraciones finales deseas imprimir
+    n_last_iterations = 5
+
+    # Determinar el índice inicial para las últimas iteraciones
+    start_index = max(0, len(data["iteration"]) - n_last_iterations)
+
+    # Imprimir las últimas n iteraciones
+    print(f"Últimas {n_last_iterations} iteraciones:")
+    for i in range(start_index, len(data["iteration"])):
+        print(
+            f"Iteración {data['iteration'][i]}: "
+            f"f(x_i) = {data['prev'][i]}, "
+            f"f(x_i+1) = {data['fnew'][i]}, "
+            f"error = {data['error'][i]}\n"
+        )
+"""         print(
+            f"Iteración {data['iteration'][i]}\n"
+            f"\\begin{{itemize}}\n"
+            f"\\item f($x_i$) = {data['prev'][i]} $\\qquad$ f($x_{{i+1}}$) = {data['fnew'][i]}\n"
+            f"\\item error = {data['error'][i]}\n"
+            f"\\end{{itemize}}"
+        ) """
