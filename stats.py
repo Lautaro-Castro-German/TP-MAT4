@@ -139,7 +139,7 @@ if __name__ == "__main__":
             x = df[col].values
             stats = calculate_stats(x, y)
             print(f"Columna: {col}\n" f"R^2 = {stats['R2']}\n" f"r = {stats['r']}\n")
-            if col == "height_cm":
+            if stats["R2"] > max_col:
                 max_col = stats["R2"]
                 x_max = x
 
