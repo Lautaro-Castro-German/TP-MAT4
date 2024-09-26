@@ -137,6 +137,10 @@ print(
     stats["R2"],
 )
 
+# imprimir la recta de regresion lineal
+print(f"y = {stats['b0']} + {stats['b1']}x")
+
+
 # Inferencias sobre los parámetros de la recta, estimando las fluctuaciones con una confianza del 95%.
 estimateFluctiations(stats)
 

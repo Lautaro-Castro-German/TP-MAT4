@@ -49,7 +49,7 @@ if __name__ == "__main__":
     # función y derivada
     f = ecm
     df = ecm_grad
-    tol = 1000  # tolerancia antes 1e-16
+    tol = 1e-6
     step = 0.01
     iteration = 1
 
